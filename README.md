@@ -28,4 +28,9 @@ $ npm i express
 $ npm i pug
 
 ` mvp.css Class 자동 완성 `
-      link(rel="stylesheet", href="https://unpkg.com/mvp.css")
+link(rel="stylesheet", href="https://unpkg.com/mvp.css")
+
+# ch2
+
+ws 패키지 설치, 웹 소켓 서버
+$ npm i ws
