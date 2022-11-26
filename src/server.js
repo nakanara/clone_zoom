@@ -1,8 +1,9 @@
 import express from "express";
+import SocketIO from "socket.io";
 import http from "http";
-import WebSocket from "ws";
 
 const app = express();
+
 
 // 뷰엔진 설정
 app.set("view engine", "pug");
@@ -16,33 +17,29 @@ app.get("/", (req, res) => res.render("home"));
 app.get("*", (req, res) => res.redirect("/"));
 
 
-const handleListen = () => console.log("Listening on http://localhost:3000");
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer);
 
-
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-const sockets = [];
-
-
-// 접속
-wss.on("connection", (socket) => {
-  sockets.push(socket);
-  socket["nickname"] = "Anonymous"
-  console.log("Connected to Browser");
-  socket.on("close", ()=> console.log("Disconnected from Browser"));
-  socket.on("message", (msg)=> {
-    const message = JSON.parse(msg);
-    console.log(message.type, message.payload);
-    
-    switch(message.type) {
-      case "new_message":
-        sockets.forEach(aSocket => aSocket.send(`${socket.nickname}: ${message.payload}`));
-        break;
-      case "nickname":
-        socket["nickname"] = message.payload;
-        break;
-    }
+wsServer.on("connection", (socket) => {
+  
+  socket.on("enter_room", (roomName, done) => {
+    done();
+    socket.join(roomName);
+    socket.to(roomName).emit("welcome");
   });
-})
 
-server.listen(3000, handleListen);
+  socket.on("disconnecting", () => {
+    console.log("bye");
+    socket.rooms.forEach(room => socket.to(room).emit("bye"));
+  });
+
+  socket.on("new_message", (msg, room, done) => {
+    socket.to(room).emit("new_message", msg);
+    done();
+  });
+
+});
+
+
+const handleListen = () => console.log("Listening on http://localhost:3000");
+httpServer.listen(3000, handleListen);

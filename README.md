@@ -34,3 +34,9 @@ link(rel="stylesheet", href="https://unpkg.com/mvp.css")
 
 ws 패키지 설치, 웹 소켓 서버
 $ npm i ws
+
+
+# ch4
+
+socket.io 설치
+$ npm i socket.io
